@@ -1,7 +1,7 @@
 import java.util.*;
-import java.lang.*;
+import java.io.*;
 
-class Node{
+class Node {
     int to;
     int cost;
     
@@ -9,65 +9,77 @@ class Node{
         this.to = to;
         this.cost = cost;
     }
+}
+
+class State {
+    int currentstate;
+    int distance;
     
-    public int getcost(){
-        return cost;
+    public State(int currentstate,int distance){
+        this.currentstate = currentstate;
+        this.distance = distance;
+    }
+    
+    public int getdistance(){
+        return distance;
     }
 }
 
 class Solution {
     public int solution(int N, int[][] road, int K) {
-        PriorityQueue<Node> pq = new PriorityQueue<Node>(
-        Comparator.comparing(Node::getcost)
-        );
-        
         int[] dist = new int[N+1];
         
-        Arrays.fill(dist,Integer.MAX_VALUE);
-
         ArrayList<ArrayList<Node>> graph = new ArrayList<ArrayList<Node>>();
         
+        Arrays.fill(dist,Integer.MAX_VALUE);
+        
+        dist[1] = 0;
+            
         for(int i=0;i<=N;i++){
             graph.add(new ArrayList<Node>());
         }
         
-        for(int i=0;i<road.length;i++){
+        int roadl = road.length;
+        
+        for(int i=0;i<roadl;i++){
             int a = road[i][0];
             int b = road[i][1];
+            int cost = road[i][2];
             
-            int c = road[i][2];
-            
-            graph.get(a).add(new Node(b,c));
-            graph.get(b).add(new Node(a,c));
+            graph.get(a).add(new Node(b,cost));
+            graph.get(b).add(new Node(a,cost));
         }
         
-        dist[1] = 0;
-        pq.add(new Node(1,0));
+        PriorityQueue<State> pq = new PriorityQueue<State>(Comparator.comparing(State::getdistance));
+        
+        
+        pq.add(new State(1,0));
         
         while(!pq.isEmpty()){
-            Node now = pq.poll();
+            State now = pq.poll();
             
-            if(now.cost > dist[now.to]){
+            if(dist[now.currentstate] < now.distance){
                 continue;
             }
             
-            for(Node next : graph.get(now.to)){
-                int newcost = next.cost + dist[now.to];
+            for(Node a : graph.get(now.currentstate)){
+                int newdistance = dist[now.currentstate] + a.cost;
                 
-                if(newcost < dist[next.to]){
-                    dist[next.to] = newcost;
-                    pq.add(new Node(next.to,newcost));
+                if(newdistance < dist[a.to]){
+                    dist[a.to] = newdistance;
+                    pq.add(new State(a.to,newdistance));
                 }
             }
+            
         }
         
         int count = 0;
+        
         for(int i=1;i<=N;i++){
             if(dist[i]<=K){
                 count++;
             }
         }
-
         return count;
     }
 }
